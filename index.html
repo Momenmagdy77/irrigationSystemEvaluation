@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irrigation System Evaluation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: auto;
+            padding: 0;
+     
+            justify-content: center;
+            align-items: center;
+         
+        }
+
+        .container1 {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: auto;
+            color: #1f4e5f;
+            font-weight: bolder;
+            font-family: "Playfair Display", serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1f4e5f;
+font-weight: bolder;
+font-family: "Playfair Display", serif;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            
+        }
+
+        input {
+            width: 94%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #aacfd0;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bolder;
+        }
+
+        button:hover {
+            background-color: #79a8a9;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        #uniformityResult, #distributionResult {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .blue {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .green {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .red {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .container {
+            padding: 10px;
+            text-align: center;
+            align-items: center;
+          }
+          .container a {
+            font-family: "Playfair Display", serif;
+    
+            color: white;
+            font-size: 40px;
+            font-weight: bolder;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+          }
+          .nav1 {
+            background-color: #1f4e5f;
+            justify-content: center;
+            position: relative;
+            display: flex;
+          }
+          .icon2 {
+            padding-top: 15px;
+          }
+          .icon3 {
+            padding-top: 8px;
+          }
+    </style>
+</head>
+<body>
+    
+        
+    <div class="container1">
+        <h1>Irrigation System Evaluation</h1>
+        <form id="evaluationForm">
+            <label for="numContainers">Number of Cans:</label>
+            <input type="number" id="numContainers" name="numContainers" required min="1">
+            
+            <div id="containerInputs"></div>
+            
+            <button type="button" onclick="calculate()">Calculate</button>
+        </form>
+        
+        <div id="results">
+            <h2>Results:</h2>
+            <p id="uniformityResult"></p>
+            <p id="distributionResult"></p>
+        </div>
+    </div>
+
+    <script>
+        //Cans Containers 
+        document.getElementById('numContainers').addEventListener('input', function () {
+            const numContainers = parseInt(this.value);
+            const containerInputs = document.getElementById('containerInputs');
+            containerInputs.innerHTML = ''; // Delete Containers
+
+            for (let i = 1; i <= numContainers; i++) {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.placeholder = `Container ${i} Depth`;
+                input.className = 'containerInput';
+                input.required = true;
+                containerInputs.appendChild(input);
+            }
+        });
+
+        // Calculations
+        function calculate() {
+            const containerInputs = document.querySelectorAll('.containerInput');
+            const depths = Array.from(containerInputs).map(input => parseFloat(input.value));
+
+            if (depths.some(isNaN)) {
+                alert('Please fill all container depths correctly.');
+                return;
+            }
+
+            const averageDepth = depths.reduce((sum, depth) => sum + depth, 0) / depths.length;
+
+            // Cu Calculation
+            const uniformity = 1 - (depths.reduce((sum, depth) => sum + Math.abs(depth - averageDepth), 0) / (depths.length * averageDepth));
+            const uniformityPercentage = (uniformity * 100).toFixed(2);
+
+            let uniformityText = '';
+            let uniformityClass = '';
+            if (uniformityPercentage >= 90) {
+                uniformityText = `Uniformity: ${uniformityPercentage}% - Excellent (Blue)`;
+                uniformityClass = 'blue';
+            } else if (uniformityPercentage >= 80) {
+                uniformityText = `Uniformity: ${uniformityPercentage}% - Acceptable (Green)`;
+                uniformityClass = 'green';
+            } else {
+                uniformityText = `Uniformity: ${uniformityPercentage}% - Unacceptable (Red)`;
+                uniformityClass = 'red';
+            }
+
+            document.getElementById('uniformityResult').innerText = uniformityText;
+            document.getElementById('uniformityResult').className = uniformityClass;
+
+            // Du in Lower Quarter Calculation
+            const sortedDepths = depths.sort((a, b) => a - b);
+            const quarterLength = Math.ceil(sortedDepths.length / 4);
+            const lowestQuarterDepths = sortedDepths.slice(0, quarterLength);
+            const averageLowestQuarter = lowestQuarterDepths.reduce((sum, depth) => sum + depth, 0) / lowestQuarterDepths.length;
+            const distributionRatio = (averageLowestQuarter / averageDepth) * 100;
+
+            let distributionText = '';
+            let distributionClass = '';
+            if (distributionRatio >= 80) {
+                distributionText = `Distribution: ${distributionRatio.toFixed(2)}% - Excellent (Blue)`;
+                distributionClass = 'blue';
+            } else if (distributionRatio >= 67) {
+                distributionText = `Distribution: ${distributionRatio.toFixed(2)}% - Good (Green)`;
+                distributionClass = 'green';
+            } else {
+                distributionText = `Distribution: ${distributionRatio.toFixed(2)}% - Unacceptable (Red)`;
+                distributionClass = 'red';
+            }
+
+            document.getElementById('distributionResult').innerText = distributionText;
+            document.getElementById('distributionResult').className = distributionClass;
+        }
+    </script>
+</body>
+</html>
